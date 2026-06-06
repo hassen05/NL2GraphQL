@@ -1,10 +1,10 @@
-# Zephyr Agent
+# NL2GraphQL
 
-Zephyr Agent is a schema-grounded natural-language interface for GraphQL data.
+NL2GraphQL is a schema-grounded natural-language interface for GraphQL data.
 
 Instead of asking an LLM to write GraphQL directly, it plans in a typed intermediate form called `PlanV2`, validates that plan against the active schema, compiles `fetch` steps deterministically into GraphQL, optionally executes them, and returns grounded answers. The core architectural claim is that direct `NL -> GraphQL` generation is the failure mode to avoid: it forces the model to choose user intent, schema path, and exact query syntax all at once, which makes semantic drift and schema hallucinations much harder to control.
 
-## What It Does
+-## What It Does
 - accepts a natural-language question
 - produces a typed `PlanV2` plan
 - validates plan structure against schema-derived constraints
@@ -12,6 +12,9 @@ Instead of asking an LLM to write GraphQL directly, it plans in a typed intermed
 - executes queries and applies deterministic operators such as `aggregate`, `filter_rows`, `rank`, `compare`, `distance_haversine`, and `trend_summary`
 - returns grounded natural-language answers
 - exposes debug output with plan, executed queries, scope, and repair traces when requested
+ - returns grounded natural-language answers
+ - exposes debug output with plan, executed queries, scope, and repair traces when requested
+ 
 
 ## Quick Start
 1. Start your model backend.
@@ -26,7 +29,7 @@ cargo run
 
 3. Open `http://localhost:8080/`
 
-The default page is the redesigned Zephyr Workspace. Anonymous users can ask
+The default page is the redesigned NL2GraphQL Workspace. Anonymous users can ask
 questions, see grounded answers, structured result views, charts when structured
 evidence is available, and query history.
 
@@ -95,8 +98,8 @@ Notes:
 - `GRAPH_API_KEY`
 - `DIRECT_GRAPHQL_QUERY_ENABLED`
 - `EXECUTE_ENABLED`
-- `ZEPHYR_MCP_ENABLED`
-- `ZEPHYR_HTTP_ENABLED`
+- `agent_MCP_ENABLED`
+- `agent_HTTP_ENABLED`
 - `MCP_TRANSPORT`
 - `MCP_DEBUG_TOOLS_ENABLED`
 - `SCHEMA_FILE_PATH`
@@ -148,7 +151,7 @@ The chat endpoint supports two separate controls:
 The direct `/graphql/query` proxy is disabled by default. Set `DIRECT_GRAPHQL_QUERY_ENABLED=true` only for trusted/debug deployments; enabled requests are still validated against the active schema and reject mutations, subscriptions, fragments, shorthand selection sets, variables, and introspection fields before execution.
 
 ## MCP Runtime
-Zephyr can also run as a local stdio MCP server for agent clients. MCP is off by
+NL2GraphQL can also run as a local stdio MCP server for agent clients. MCP is off by
 default, so the normal web server behavior is unchanged.
 
 Web only:
@@ -160,34 +163,34 @@ cargo run
 MCP stdio only:
 
 ```bash
-ZEPHYR_MCP_ENABLED=true \
-ZEPHYR_HTTP_ENABLED=false \
+agent_MCP_ENABLED=true \
+agent_HTTP_ENABLED=false \
 cargo run
 ```
 
 Web and MCP together:
 
 ```bash
-ZEPHYR_MCP_ENABLED=true \
+agent_MCP_ENABLED=true \
 cargo run
 ```
 
 Safe MCP tools are available by default:
-- `ask_zephyr`
+- `ask_agent`
 - `inspect_schema`
 - `get_history`
 
 Debug/admin MCP tools are hidden unless explicitly enabled:
 
 ```bash
-ZEPHYR_MCP_ENABLED=true \
+agent_MCP_ENABLED=true \
 MCP_DEBUG_TOOLS_ENABLED=true \
 cargo run
 ```
 
 Debug MCP tools include `plan_query`, `direct_graphql_query`, and
 `execute_plan`. For MCP, `direct_graphql_query` is available only when
-`MCP_DEBUG_TOOLS_ENABLED=true`; it still passes through Zephyr's schema
+`MCP_DEBUG_TOOLS_ENABLED=true`; it still passes through agent's schema
 validation guard. The HTTP `/graphql/query` proxy is separate and still requires
 `DIRECT_GRAPHQL_QUERY_ENABLED=true`.
 
@@ -197,49 +200,17 @@ MCP execution uses the same backend endpoint as the web UI:
 GRAPH_ENDPOINT=http://localhost:8000/graphql
 ```
 
-Make sure this URL is reachable from the process that starts Zephyr. If the
-GraphQL backend is only reachable from inside the Docker network, run Zephyr in
+Make sure this URL is reachable from the process that starts agent. If the
+GraphQL backend is only reachable from inside the Docker network, run NL2GraphQL in
 that same network or set `GRAPH_ENDPOINT` to the Docker service URL, for example:
 
-```bash
-GRAPH_ENDPOINT=http://zephyr-agent-thanos-1:8000/graphql \
-ZEPHYR_MCP_ENABLED=true \
-ZEPHYR_HTTP_ENABLED=false \
-cargo run
-```
 
-If `ask_zephyr` works with `execute=false` but `ask_zephyr` with execution or
+
+If `ask_agent` works with `execute=false` but `ask_agent` with execution or
 `direct_graphql_query` fails with `error sending request for url
 (http://localhost:8000/graphql)`, MCP is healthy but the backend endpoint is not
-reachable from Zephyr.
+reachable from agent.
 
-Example: planning only
-
-```json
-{
-  "model": "",
-  "execute": false,
-  "messages": [
-    { "role": "user", "content": "List the first 3 SCADA signals with tepId = TEP-123." }
-  ]
-}
-```
-
-Example: execute with debug output
-
-First log in through `/auth/login` or use the browser admin login form so the
-request carries the `zephyr_session` cookie.
-
-```json
-{
-  "model": "",
-  "execute": true,
-  "dry_run": true,
-  "messages": [
-    { "role": "user", "content": "List the first 3 offshore wind farms." }
-  ]
-}
-```
 
 When `dry_run: true`, output may include:
 - planner JSON
@@ -262,7 +233,7 @@ Whether real token usage appears depends on the active provider/backend:
 - if the backend does not return usage, the agent falls back to estimates only
 
 ## UI
-The browser UI at `/` serves the redesigned Zephyr Workspace.
+The browser UI at `/` serves the redesigned NL2GraphQL Workspace.
 
 Public users can:
 - ask natural-language questions in execute mode
@@ -279,7 +250,7 @@ Admins can additionally:
 - open the eval dashboard
 - access config/debug-only endpoints and admin controls
 
-For exact lookups, quoted names such as `"Wind Farm 1"` or `"the wagon"` usually work better than unquoted plain text.
+For exact lookups, quoted names such as `" Farm 1"` or `"the wagon"` usually work better than unquoted plain text.
 
 ## Why `PlanV2`
 Direct `NL -> GraphQL` generation tends to hallucinate fields, arguments, and unsafe query shapes.
@@ -328,50 +299,4 @@ User
 - backend relation gaps are surfaced as backend/schema issues where possible rather than hidden behind generic answers
 
 ## Evaluation Harnesses
-Zephyr currently has a few different evaluation entry points, each useful for a different question.
-
-### 1. Smoke run
-Good for broad regression checks across a prompt set.
-
-```bash
-python3 run_smoke.py \
-  --prompts docs/expected_user_questions_smoke_p3.txt \
-  --out-json eval/results/smoke_q2_debug.json \
-  --out-md eval/results/smoke_q2_debug.md \
-  --debug \
-  --timeout-sec 180 \
-  --admin-username admin \
-  --admin-password 'admin123'
-```
-
-### 2. DB-backed golden set
-Good for semantic correctness checks against curated expected facts.
-
-```bash
-python3 eval/run_db_golden.py \
-  --model gpt-oss:120b-cloud \
-  --cases eval/db_golden_cases.jsonl \
-  --out-json eval/results/db_golden_gpt120b.json \
-  --out-md eval/results/db_golden_gpt120b.md \
-  --debug \
-  --timeout-sec 180
-```
-
-Debug golden runs require admin access on the running server. Use the same
-admin startup command from Quick Start before running debug evals.
-
-### 3. Model matrix
-Good for comparing providers/models on latency, stability, and token usage.
-
-```bash
-python3 eval/run_model_matrix.py \
-  --prompts docs/expected_user_questions_smoke_p3.txt \
-  --models gpt-oss:20b-cloud gpt-oss:120b-cloud qwen3.5:397b-cloud deepseek-v3.1:671b-cloud \
-  --out-dir eval/results/model_matrix \
-  --debug
-```
-
-Notes:
-- smoke success rates are executability / stability signals, not final denotation-accuracy scores
-- backend-limited and no-match outcomes can still inflate or distort headline success numbers
-- the DB golden harness is the better place to track semantic correctness
+NL2GraphQL currently has a few different evaluation entry points, each useful for a different question.

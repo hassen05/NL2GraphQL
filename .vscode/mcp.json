@@ -1,11 +1,11 @@
 {
   "servers": {
-    "zephyr": {
+    "agent": {
       "type": "stdio",
       "command": "bash",
       "env": {
-        "ZEPHYR_MCP_ENABLED": "true",
-        "ZEPHYR_HTTP_ENABLED": "false",
+        "agent_MCP_ENABLED": "true",
+        "agent_HTTP_ENABLED": "false",
         "MCP_DEBUG_TOOLS_ENABLED": "true",
         "DIRECT_GRAPHQL_QUERY_ENABLED": "true"
       },

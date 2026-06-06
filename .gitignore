@@ -9,6 +9,7 @@ __pycache__/
 *.swo
 *~
 tasks/
+.codex/
 sls.yaml
 PROJECT_JOURNEY.md
 PROJECT_OVERVIEW.md
