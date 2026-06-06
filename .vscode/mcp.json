@@ -1,0 +1,18 @@
+{
+  "servers": {
+    "zephyr": {
+      "type": "stdio",
+      "command": "bash",
+      "env": {
+        "ZEPHYR_MCP_ENABLED": "true",
+        "ZEPHYR_HTTP_ENABLED": "false",
+        "MCP_DEBUG_TOOLS_ENABLED": "true",
+        "DIRECT_GRAPHQL_QUERY_ENABLED": "true"
+      },
+      "args": [
+        "-lc",
+        "cd \"${workspaceFolder}\" && cargo run --quiet"
+      ]
+    }
+  }
+}

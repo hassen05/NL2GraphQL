@@ -1,0 +1,53 @@
+# Ollama base URL for the local/remote model server.
+llm_provider = { env = "LLM_PROVIDER", default = "ollama" }
+ollama_url = { env = "OLLAMA_URL", default = "http://localhost:11434" }
+# Default model name to use for planning/synthesis.
+model = { env = "OLLAMA_MODEL", default = "gpt-oss:120b-cloud" }
+openai_api_key = { env = "OPENAI_API_KEY", default = "" }
+openai_model = { env = "OPENAI_MODEL", default = "gpt-4o-mini" }
+openai_base_url = { env = "OPENAI_BASE_URL", default = "" }
+anthropic_api_key = { env = "ANTHROPIC_API_KEY", default = "" }
+anthropic_model = { env = "ANTHROPIC_MODEL", default = "claude-3-5-sonnet-latest" }
+# Default prompt for legacy/basic endpoints only.
+prompt = { env = "PROMPT", default = "Hello, who are you?" }
+# HTTP bind host.
+server_host = { env = "SERVER_HOST", default = "0.0.0.0" }
+# HTTP bind port.
+server_port = { env = "SERVER_PORT", default = "8080" }
+# Allow backend execution when true. The browser UI enables execution by default.
+execute_enabled = { env = "EXECUTE_ENABLED", default = "true" }
+# Optional MCP runtime. Web UI remains enabled by default.
+zephyr_mcp_enabled = { env = "ZEPHYR_MCP_ENABLED", default = "false" }
+zephyr_http_enabled = { env = "ZEPHYR_HTTP_ENABLED", default = "true" }
+mcp_transport = { env = "MCP_TRANSPORT", default = "stdio" }
+mcp_debug_tools_enabled = { env = "MCP_DEBUG_TOOLS_ENABLED", default = "false" }
+
+[auth]
+# Single demo/admin account. Leave ADMIN_PASSWORD empty to disable admin login.
+admin_username = { env = "ADMIN_USERNAME", default = "admin" }
+admin_password = { env = "ADMIN_PASSWORD", default = "admin123" }
+# Required when ADMIN_PASSWORD is set; used to sign stateless admin sessions.
+session_secret = { env = "SESSION_SECRET", default = "" }
+session_ttl_hours = { env = "SESSION_TTL_HOURS", default = "8" }
+session_cookie_secure = { env = "SESSION_COOKIE_SECURE", default = "false" }
+
+[graph]
+# GraphQL endpoint URL used for validated execution.
+graph_endpoint = { env = "GRAPH_ENDPOINT", default = "http://localhost:8000/graphql" }
+# Optional bearer token for authentication (leave empty for no auth).
+bearer_token = { env = "GRAPH_BEARER_TOKEN", default = "" }
+# Optional API key header name and value.
+api_key_header = { env = "GRAPH_API_KEY_HEADER", default = "" }
+api_key = { env = "GRAPH_API_KEY", default = "" }
+# Enable the direct /graphql/query proxy endpoint. Keep disabled unless this service is trusted.
+direct_query_enabled = { env = "DIRECT_GRAPHQL_QUERY_ENABLED", default = "false" }
+
+[schema]
+# Optional local schema file path (SDL or GraphQL introspection JSON). When set, this is preferred over live introspection.
+file_path = { env = "SCHEMA_FILE_PATH", default = "schemas/consumer_schema.graphql" }
+# Where to store the cached introspection payload (relative or absolute path).
+cache_path = { env = "SCHEMA_CACHE_PATH", default = "schema_cache.json" }
+# Cache age (minutes) before being considered stale; stale cache may still be used on failure.
+cache_ttl_minutes = { env = "SCHEMA_CACHE_TTL_MINUTES", default = "720" }
+# Periodic live-introspection refresh interval in minutes (0 disables refresh).
+refresh_interval_minutes = { env = "SCHEMA_REFRESH_INTERVAL_MINUTES", default = "60" }

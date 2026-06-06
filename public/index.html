@@ -1,0 +1,2542 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Zephyr Agent Console</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap");
+
+      :root {
+        --bg-1: #0f1a1f;
+        --bg-2: #17252a;
+        --bg-3: #0b1014;
+        --accent: #2ee6a6;
+        --accent-2: #f2c94c;
+        --ink: #f5f7fb;
+        --muted: #9fb2bd;
+        --card: rgba(18, 28, 34, 0.8);
+        --stroke: rgba(255, 255, 255, 0.08);
+        --glow: rgba(46, 230, 166, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Instrument Sans", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(1200px 600px at 10% -10%, #24424a 0%, transparent 60%),
+          radial-gradient(900px 500px at 110% 20%, #1a3a2f 0%, transparent 55%),
+          linear-gradient(180deg, var(--bg-1), var(--bg-3));
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 24px 64px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 24px;
+        align-items: stretch;
+      }
+
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--stroke);
+        border-radius: 20px;
+        padding: 24px;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.4);
+      }
+
+      .title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+      }
+
+      .subtitle {
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--stroke);
+        color: var(--muted);
+        font-size: 12px;
+        background: rgba(9, 12, 14, 0.6);
+      }
+
+      .demo-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .demo-links a {
+        border: 1px solid var(--stroke);
+        border-radius: 999px;
+        padding: 7px 10px;
+        color: var(--muted);
+        background: rgba(9, 12, 14, 0.45);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .auth-panel {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .auth-status {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .login-form {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .login-form input,
+      .history-search input {
+        background: rgba(8, 12, 14, 0.7);
+        color: var(--ink);
+        border: 1px solid var(--stroke);
+        border-radius: 10px;
+        padding: 9px 10px;
+      }
+
+      .login-form input {
+        width: 136px;
+        font-size: 12px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 10px var(--glow);
+        animation: pulse 1.6s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(0.8);
+          opacity: 0.6;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.8);
+          opacity: 0.6;
+        }
+      }
+
+      .input-area {
+        display: grid;
+        gap: 12px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        padding: 14px 16px;
+        background: rgba(8, 12, 14, 0.7);
+        color: var(--ink);
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        font-size: 14px;
+        resize: vertical;
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .button {
+        background: linear-gradient(135deg, #2ee6a6, #0fb37f);
+        color: #051210;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+        box-shadow: 0 10px 24px rgba(46, 230, 166, 0.25);
+      }
+
+      .button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .button:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .button.secondary {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--stroke);
+        box-shadow: none;
+      }
+
+      .button.secondary:hover:not(:disabled) {
+        transform: none;
+      }
+
+      .button.danger {
+        background: linear-gradient(135deg, #f27c6b, #d65145);
+        color: #fff8f7;
+        box-shadow: 0 10px 24px rgba(242, 124, 107, 0.2);
+      }
+
+      .button.danger:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--stroke);
+        color: var(--muted);
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .toggle input {
+        accent-color: var(--accent);
+      }
+
+      .output {
+        margin-top: 18px;
+        padding: 16px;
+        border-radius: 14px;
+        background: rgba(6, 10, 12, 0.7);
+        border: 1px solid var(--stroke);
+        min-height: 220px;
+        white-space: pre-wrap;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 13px;
+        line-height: 1.4;
+        color: #e8f6ff;
+      }
+
+      .confirmation-panel {
+        display: none;
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(242, 201, 76, 0.3);
+        background: rgba(242, 201, 76, 0.08);
+        white-space: normal;
+      }
+
+      .confirmation-panel.visible {
+        display: grid;
+        gap: 12px;
+      }
+
+      .confirmation-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #ffe89a;
+      }
+
+      .confirmation-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .confirmation-item {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid var(--stroke);
+        background: rgba(6, 10, 12, 0.35);
+      }
+
+      .confirmation-mention {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .confirmation-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .confirmation-option {
+        border: 1px solid rgba(242, 201, 76, 0.32);
+        background: rgba(242, 201, 76, 0.12);
+        color: #fff2bd;
+        border-radius: 999px;
+        padding: 8px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .confirmation-option:hover {
+        border-color: rgba(242, 201, 76, 0.6);
+      }
+
+      .answer-view {
+        white-space: normal;
+        font-family: "Instrument Sans", sans-serif;
+        display: grid;
+        gap: 14px;
+      }
+
+      .answer-text {
+        white-space: pre-wrap;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        line-height: 1.55;
+      }
+
+      .answer-detail-card {
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        padding: 14px;
+        background: rgba(46, 230, 166, 0.06);
+      }
+
+      .answer-detail-title {
+        margin-bottom: 10px;
+        color: var(--accent);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .answer-detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .answer-detail-field {
+        border: 1px solid var(--stroke);
+        border-radius: 10px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.035);
+      }
+
+      .answer-detail-label {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .answer-detail-value {
+        margin-top: 4px;
+        color: var(--ink);
+        font-weight: 750;
+        overflow-wrap: anywhere;
+      }
+
+      .why-panel {
+        white-space: normal;
+        font-family: "Instrument Sans", sans-serif;
+        display: grid;
+        gap: 14px;
+      }
+
+      .why-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .why-card {
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .why-card-label {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .why-card-value {
+        margin-top: 5px;
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      .why-section {
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        padding: 13px;
+        background: rgba(6, 10, 12, 0.45);
+      }
+
+      .why-section-title {
+        margin-bottom: 9px;
+        color: var(--accent);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .why-badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .why-badge {
+        border: 1px solid rgba(46, 230, 166, 0.28);
+        border-radius: 999px;
+        padding: 7px 9px;
+        color: #c8f8e6;
+        background: rgba(46, 230, 166, 0.08);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .why-badge.warn {
+        border-color: rgba(242, 201, 76, 0.34);
+        color: #fff2bd;
+        background: rgba(242, 201, 76, 0.09);
+      }
+
+      .why-step-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .why-step {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .why-step-id {
+        min-width: 34px;
+        border-radius: 999px;
+        padding: 5px 8px;
+        text-align: center;
+        color: #051210;
+        background: var(--accent);
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .why-step-title {
+        font-weight: 800;
+      }
+
+      .why-step-meta {
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+
+      .why-table-wrap {
+        overflow: auto;
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+      }
+
+      .why-table {
+        width: 100%;
+        min-width: 520px;
+        border-collapse: collapse;
+      }
+
+      .why-table th,
+      .why-table td {
+        padding: 9px;
+        border-bottom: 1px solid var(--stroke);
+        text-align: left;
+        vertical-align: top;
+        font-size: 12px;
+      }
+
+      .why-table th {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+
+      .why-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .why-code {
+        margin: 0;
+        padding: 12px;
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        background: rgba(1, 5, 7, 0.65);
+        color: var(--ink);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+
+      .why-empty {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .execution-hud {
+        white-space: normal;
+        font-family: "Instrument Sans", sans-serif;
+        display: grid;
+        gap: 16px;
+      }
+
+      .hud-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(46, 230, 166, 0.18);
+        background:
+          radial-gradient(500px 120px at 0% 0%, rgba(46, 230, 166, 0.16), transparent 70%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      }
+
+      .hud-eyebrow {
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .hud-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .hud-subtitle {
+        color: var(--muted);
+        margin-top: 4px;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .hud-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(242, 201, 76, 0.1);
+        border: 1px solid rgba(242, 201, 76, 0.25);
+        color: #ffe89a;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .hud-live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent-2);
+        box-shadow: 0 0 14px rgba(242, 201, 76, 0.7);
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+
+      .phase-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .phase-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 116px;
+        padding: 13px;
+        border-radius: 16px;
+        border: 1px solid var(--stroke);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .phase-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        background: radial-gradient(260px 120px at 50% 0%, rgba(46, 230, 166, 0.18), transparent 70%);
+        transition: opacity 0.18s ease;
+      }
+
+      .phase-card.running {
+        border-color: rgba(242, 201, 76, 0.34);
+        background: rgba(242, 201, 76, 0.06);
+      }
+
+      .phase-card.running::before {
+        opacity: 1;
+      }
+
+      .phase-card.completed {
+        border-color: rgba(46, 230, 166, 0.26);
+        background: rgba(46, 230, 166, 0.055);
+      }
+
+      .phase-card.failed,
+      .phase-card.error {
+        border-color: rgba(242, 124, 107, 0.38);
+        background: rgba(242, 124, 107, 0.08);
+      }
+
+      .phase-card.pending {
+        opacity: 0.56;
+      }
+
+      .phase-card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .phase-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .phase-name {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .phase-time {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .phase-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .status-glyph {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+
+      .running .status-glyph {
+        background: var(--accent-2);
+        box-shadow: 0 0 12px rgba(242, 201, 76, 0.55);
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+
+      .completed .status-glyph {
+        background: var(--accent);
+        box-shadow: 0 0 12px rgba(46, 230, 166, 0.38);
+      }
+
+      .failed .status-glyph,
+      .error .status-glyph {
+        background: #f27c6b;
+      }
+
+      .phase-message {
+        color: #d8e8ef;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .step-rack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .step-rack-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .step-count-pill {
+        letter-spacing: 0;
+        text-transform: none;
+        color: #d8e8ef;
+        border: 1px solid var(--stroke);
+        border-radius: 999px;
+        padding: 4px 8px;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .step-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid var(--stroke);
+        background:
+          linear-gradient(90deg, rgba(46, 230, 166, 0.055), transparent 34%),
+          rgba(255, 255, 255, 0.035);
+        animation: stepIn 0.18s ease-out both;
+      }
+
+      @keyframes stepIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .step-card.running {
+        border-color: rgba(242, 201, 76, 0.3);
+      }
+
+      .step-card.completed {
+        border-color: rgba(46, 230, 166, 0.24);
+      }
+
+      .step-card.pending {
+        opacity: 0.66;
+      }
+
+      .step-orb {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid var(--stroke);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--accent);
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .step-main {
+        min-width: 0;
+      }
+
+      .step-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+
+      .step-meta {
+        color: var(--muted);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .row-badge {
+        justify-self: end;
+        white-space: nowrap;
+        color: #071612;
+        background: linear-gradient(135deg, #2ee6a6, #9af6d5);
+        border-radius: 999px;
+        padding: 6px 9px;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .row-badge.pending {
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--stroke);
+      }
+
+      .debug-tabs {
+        display: none;
+        gap: 8px;
+        margin-top: 18px;
+        flex-wrap: wrap;
+      }
+
+      .debug-tabs.visible {
+        display: flex;
+      }
+
+      .tab-button {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--stroke);
+        color: var(--muted);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .tab-button.active {
+        color: #051210;
+        background: linear-gradient(135deg, #2ee6a6, #0fb37f);
+        border-color: transparent;
+      }
+
+      .output-panel {
+        display: none;
+      }
+
+      .output-panel.active {
+        display: block;
+      }
+
+      .output-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 18px;
+      }
+
+      .sidebar h3 {
+        font-family: "Space Grotesk", sans-serif;
+        margin: 0 0 12px;
+      }
+
+      .status {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #f2c94c;
+        box-shadow: 0 0 10px rgba(242, 201, 76, 0.4);
+      }
+
+      .history-section {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--stroke);
+      }
+
+      .history-controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .history-search {
+        display: flex;
+        gap: 6px;
+      }
+
+      .history-search input {
+        flex: 1;
+        padding: 8px 10px;
+        background: rgba(8, 12, 14, 0.7);
+        color: var(--ink);
+        border: 1px solid var(--stroke);
+        border-radius: 8px;
+        font-size: 12px;
+      }
+
+      .history-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        background: rgba(8, 12, 14, 0.5);
+      }
+
+      .history-item {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--stroke);
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.12s ease;
+      }
+
+      .history-item:hover {
+        background: rgba(46, 230, 166, 0.08);
+      }
+
+      .history-item.active {
+        background: rgba(46, 230, 166, 0.14);
+        box-shadow: inset 0 0 0 1px rgba(46, 230, 166, 0.18);
+      }
+
+      .history-item:last-child {
+        border-bottom: none;
+      }
+
+      .history-item-question {
+        color: var(--accent);
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+
+      .history-item-meta {
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .history-stats {
+        background: rgba(46, 230, 166, 0.08);
+        border: 1px solid rgba(46, 230, 166, 0.2);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 12px;
+      }
+
+      .history-stats-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 4px 0;
+      }
+
+      .history-detail {
+        margin-top: 12px;
+        border: 1px solid var(--stroke);
+        border-radius: 12px;
+        background: rgba(8, 12, 14, 0.5);
+        padding: 12px;
+      }
+
+      .history-detail-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 10px;
+      }
+
+      .history-detail-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      .history-detail-meta {
+        color: var(--muted);
+        font-size: 11px;
+        text-align: right;
+      }
+
+      .history-detail-section {
+        margin-top: 10px;
+      }
+
+      .history-detail-label {
+        display: block;
+        color: var(--accent);
+        font-size: 11px;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .history-detail-body {
+        padding: 10px;
+        border-radius: 10px;
+        background: rgba(6, 10, 12, 0.75);
+        border: 1px solid var(--stroke);
+        color: #e8f6ff;
+        white-space: pre-wrap;
+        font-size: 12px;
+        line-height: 1.4;
+        max-height: 220px;
+        overflow: auto;
+      }
+
+      .history-detail-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .phase-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .why-summary {
+          grid-template-columns: 1fr;
+        }
+
+        .answer-detail-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .step-card {
+          grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .row-badge {
+          grid-column: 2;
+          justify-self: start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="panel" style="margin-bottom: 18px">
+        <div class="badge">
+          <span class="pulse"></span>
+          Zephyr Agent · IR → GraphQL Console
+        </div>
+        <h1 class="title">Ask your schema. Get real data.</h1>
+        <p class="subtitle">
+          This UI sends your question to the Zephyr Agent. In execute mode it returns
+          final data results; debug mode can also show IR and generated GraphQL.
+        </p>
+        <div class="demo-links admin-only" hidden>
+          <a href="demo_redesigned.html">Charts Demo</a>
+          <a href="/eval-dashboard.html">Eval Dashboard</a>
+        </div>
+        <div class="auth-panel">
+          <span class="auth-status" id="authStatus">Checking access...</span>
+          <form class="login-form" id="loginForm" hidden>
+            <input id="adminUsername" name="username" autocomplete="username" placeholder="Admin" />
+            <input
+              id="adminPassword"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Password"
+            />
+            <button class="button secondary" type="submit" style="padding: 8px 12px; font-size: 12px;">
+              Log In
+            </button>
+          </form>
+          <button class="button secondary" id="logoutBtn" type="button" hidden style="padding: 8px 12px; font-size: 12px;">
+            Log Out
+          </button>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="panel">
+          <div class="input-area">
+            <label for="question" class="subtitle">Question</label>
+            <textarea
+              id="question"
+              placeholder="Ask about wind farms, turbines, vessel locations, or weather predictions."
+            ></textarea>
+            <div class="controls">
+              <button class="button" id="sendBtn">Run Query</button>
+              <button class="button danger" id="stopBtn" type="button" disabled>Stop</button>
+              <label class="toggle admin-only" hidden>
+                <input type="checkbox" id="executeToggle" checked />
+                Execute against backend
+              </label>
+              <label class="toggle admin-only" hidden>
+                <input type="checkbox" id="debugToggle" />
+                Debug output (IR/query)
+              </label>
+              <span id="status" class="status">
+                <span>Idle</span>
+                <span class="dot"></span>
+              </span>
+            </div>
+            <p class="subtitle" style="margin: 6px 0 0; font-size: 12px;">
+              Default mode executes the query and returns grounded results. Turn on <code>Debug output</code> when you want the plan, effective queries, and traces.
+            </p>
+            <p class="subtitle" style="margin: 4px 0 0; font-size: 12px;">
+              For exact lookups, wrap names in quotes like <code>"the wagon"</code>, <code>"Turbine 2"</code>, or <code>"Wind Farm 1"</code>.
+            </p>
+            <div class="chip-row">
+              <button class="chip" data-q="List the first 3 offshore wind farms with name and shortName.">
+                Wind farms
+              </button>
+              <button class="chip" data-q="Show wind speed trend.">
+                Wind speed trend
+              </button>
+              <button class="chip" data-q="What's the closest turbine to &quot;the wagon&quot;?">
+                Closest turbine
+              </button>
+            <button class="chip" data-q="Show wind speed trend next week.">
+              Trend with time
+            </button>
+              <button class="chip" data-q="List offshore wind farms with shortName containing &quot;1&quot;.">
+                Filtered list
+              </button>
+            </div>
+          </div>
+          <div class="debug-tabs" id="debugTabs">
+            <button class="tab-button active" id="tabAnswer" type="button">Answer</button>
+            <button class="tab-button" id="tabWhy" type="button">Why This Answer</button>
+            <button class="tab-button" id="tabQueries" type="button">Executed Queries</button>
+            <button class="tab-button" id="tabRawDebug" type="button">Full Debug</button>
+          </div>
+          <div class="output-toolbar">
+            <button class="button secondary" id="copyOutputBtn" type="button">
+              Copy Full Output
+            </button>
+          </div>
+          <div class="confirmation-panel" id="confirmationPanel" role="dialog" aria-live="polite"></div>
+          <div class="output-panel active" id="answerPanel">
+            <div class="output" id="output">Results will appear here.</div>
+          </div>
+          <div class="output-panel" id="whyPanel">
+            <div class="output" id="whyOutput">Turn on debug output to inspect why an answer was produced.</div>
+          </div>
+          <div class="output-panel" id="queriesPanel">
+            <div class="output" id="queriesOutput">Executed queries will appear here in debug mode.</div>
+          </div>
+          <div class="output-panel" id="rawDebugPanel">
+            <div class="output" id="rawDebugOutput">Full debug output will appear here in debug mode.</div>
+          </div>
+        </div>
+
+        <div class="panel sidebar">
+          <h3>How it works</h3>
+          <p class="subtitle">
+            Zephyr turns your question into a validated PlanV2, compiles fetch steps to GraphQL, and executes them against the backend when enabled.
+          </p>
+          <h3 style="margin-top: 20px">How To Ask</h3>
+          <p class="subtitle">
+            For the best results, be specific about time, entity, and scope.
+          </p>
+          <div class="subtitle" style="font-size: 13px; line-height: 1.5">
+            1. Add a time window when it matters: <code>on 2026-02-17</code>, <code>last week</code>.<br />
+            2. Put exact lookup values in quotes: <code>"the wagon"</code>, <code>"Turbine 2"</code>, <code>"Wind Farm 1"</code>.<br />
+            3. Ask for one clear task at a time: trend, compare, nearest, list, or filter.<br />
+            4. Use debug mode if you want to inspect the plan and generated GraphQL.
+          </div>
+          <div class="status" style="margin-top: 18px">
+            <span>Endpoint</span>
+            <span>/v1/chat/completions</span>
+          </div>
+          <div class="status">
+            <span>Mode</span>
+            <span id="modeStatus">Execute</span>
+          </div>
+          <div class="status admin-only" hidden>
+            <span>Debug</span>
+            <span id="debugStatus">Off</span>
+          </div>
+          <div class="status">
+            <span>Last run</span>
+            <span id="elapsedTime">-</span>
+          </div>
+          <div class="status">
+            <span>Grounding</span>
+            <span id="groundingStatus">-</span>
+          </div>
+
+          <div class="history-section admin-only" hidden>
+            <h3>Query History</h3>
+            <div class="history-controls">
+              <button class="button secondary" id="refreshHistoryBtn" type="button" style="padding: 8px 12px; font-size: 12px;">Refresh</button>
+              <button class="button secondary" id="clearHistoryBtn" type="button" style="padding: 8px 12px; font-size: 12px;">Clear</button>
+            </div>
+            <div class="history-search">
+              <input type="text" id="historySearchInput" placeholder="Search queries..." />
+              <button class="button secondary" id="searchHistoryBtn" type="button" style="padding: 8px 12px; font-size: 12px;">Search</button>
+            </div>
+            <div class="history-list" id="historyList">
+              <div class="history-item" style="color: var(--muted);">No history yet. Run a query first.</div>
+            </div>
+            <div class="history-stats" id="historyStats" style="display: none;">
+              <div class="history-stats-row">
+                <span>Total Queries:</span>
+                <span id="statTotal">0</span>
+              </div>
+              <div class="history-stats-row">
+                <span>Success Rate:</span>
+                <span id="statSuccess">0%</span>
+              </div>
+              <div class="history-stats-row">
+                <span>Avg Time:</span>
+                <span id="statAvgTime">0ms</span>
+              </div>
+            </div>
+            <div class="history-detail" id="historyDetail">
+              <div class="history-detail-header">
+                <div class="history-detail-title" id="historyDetailTitle">History Details</div>
+                <div class="history-detail-meta" id="historyDetailMeta">Select a query to inspect it.</div>
+              </div>
+              <div class="history-detail-section">
+                <span class="history-detail-label">Question</span>
+                <div class="history-detail-body" id="historyDetailQuestion">No history item selected.</div>
+              </div>
+              <div class="history-detail-section">
+                <span class="history-detail-label">Answer / Error</span>
+                <div class="history-detail-body" id="historyDetailAnswer">Run a query or click a history item to inspect it here.</div>
+              </div>
+              <div class="history-detail-section">
+                <span class="history-detail-label">Grounding / Confidence</span>
+                <div class="history-detail-body" id="historyDetailGrounding">No grounding details available yet.</div>
+              </div>
+              <div class="history-detail-actions">
+                <button class="button secondary" id="reuseHistoryBtn" type="button" disabled style="padding: 8px 12px; font-size: 12px;">Reuse Query</button>
+                <button class="button secondary" id="loadHistoryOutputBtn" type="button" disabled style="padding: 8px 12px; font-size: 12px;">Load Output</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const output = document.getElementById("output");
+      const queriesOutput = document.getElementById("queriesOutput");
+      const sendBtn = document.getElementById("sendBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const question = document.getElementById("question");
+      const status = document.getElementById("status");
+      const modeStatus = document.getElementById("modeStatus");
+      const debugStatus = document.getElementById("debugStatus");
+      const elapsedTime = document.getElementById("elapsedTime");
+      const debugTabs = document.getElementById("debugTabs");
+      const answerPanel = document.getElementById("answerPanel");
+      const whyPanel = document.getElementById("whyPanel");
+      const queriesPanel = document.getElementById("queriesPanel");
+      const rawDebugPanel = document.getElementById("rawDebugPanel");
+      const whyOutput = document.getElementById("whyOutput");
+      const tabAnswer = document.getElementById("tabAnswer");
+      const tabWhy = document.getElementById("tabWhy");
+      const tabQueries = document.getElementById("tabQueries");
+      const tabRawDebug = document.getElementById("tabRawDebug");
+      const rawDebugOutput = document.getElementById("rawDebugOutput");
+      const executeToggle = document.getElementById("executeToggle");
+      const debugToggle = document.getElementById("debugToggle");
+      const copyOutputBtn = document.getElementById("copyOutputBtn");
+      const confirmationPanel = document.getElementById("confirmationPanel");
+      const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
+      const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+      const searchHistoryBtn = document.getElementById("searchHistoryBtn");
+      const historySearchInput = document.getElementById("historySearchInput");
+      const historyList = document.getElementById("historyList");
+      const historyStats = document.getElementById("historyStats");
+      const historyDetailTitle = document.getElementById("historyDetailTitle");
+      const historyDetailMeta = document.getElementById("historyDetailMeta");
+      const historyDetailQuestion = document.getElementById("historyDetailQuestion");
+      const historyDetailAnswer = document.getElementById("historyDetailAnswer");
+      const historyDetailGrounding = document.getElementById("historyDetailGrounding");
+      const reuseHistoryBtn = document.getElementById("reuseHistoryBtn");
+      const loadHistoryOutputBtn = document.getElementById("loadHistoryOutputBtn");
+      const groundingStatus = document.getElementById("groundingStatus");
+      const authStatus = document.getElementById("authStatus");
+      const loginForm = document.getElementById("loginForm");
+      const adminUsername = document.getElementById("adminUsername");
+      const adminPassword = document.getElementById("adminPassword");
+      const logoutBtn = document.getElementById("logoutBtn");
+      let effectiveModel = "";
+      let elapsedTimer = null;
+      let activeAbortController = null;
+      let lastSubmittedPrompt = "";
+      let currentHistoryEntries = [];
+      let selectedHistoryId = null;
+      let selectedHistoryEntry = null;
+      let lastRenderedOutputText = "";
+      let isAdmin = false;
+
+      document.querySelectorAll(".chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          question.value = chip.dataset.q;
+          question.focus();
+        });
+      });
+
+      function applyAuthState(session) {
+        isAdmin = !!session?.authenticated && session?.role === "admin";
+        document.querySelectorAll(".admin-only").forEach((el) => {
+          el.hidden = !isAdmin;
+        });
+        loginForm.hidden = isAdmin || !session?.admin_configured;
+        logoutBtn.hidden = !isAdmin;
+        if (!session?.admin_configured) {
+          authStatus.textContent = "Admin debug login not configured.";
+        } else if (isAdmin) {
+          authStatus.textContent = "Admin debug unlocked.";
+        } else {
+          authStatus.textContent = "Public mode. Admin login unlocks debug.";
+        }
+        if (!isAdmin) {
+          debugToggle.checked = false;
+          executeToggle.checked = true;
+          modeStatus.textContent = "Execute";
+          debugStatus.textContent = "Off";
+          debugTabs.classList.remove("visible");
+          setActiveTab("answer");
+          renderHistoryList([]);
+          historyStats.style.display = "none";
+        }
+      }
+
+      async function refreshSession() {
+        try {
+          const res = await fetch("/auth/session");
+          const session = res.ok ? await res.json() : { authenticated: false, role: "anonymous", admin_configured: false };
+          applyAuthState(session);
+          if (isAdmin) {
+            await loadConfig();
+            await loadHistory();
+          }
+        } catch (err) {
+          applyAuthState({ authenticated: false, role: "anonymous", admin_configured: false });
+        }
+      }
+
+      function applyInitialQueryParams() {
+        const params = new URLSearchParams(window.location.search);
+        const initialQuestion = params.get("q") || params.get("question");
+        if (initialQuestion) {
+          question.value = initialQuestion;
+          question.focus();
+        }
+        if (isAdmin && params.has("debug")) {
+          debugToggle.checked = params.get("debug") !== "0" && params.get("debug") !== "false";
+          debugStatus.textContent = debugToggle.checked ? "On" : "Off";
+        }
+        if (isAdmin && params.has("execute")) {
+          executeToggle.checked = params.get("execute") !== "0" && params.get("execute") !== "false";
+          modeStatus.textContent = executeToggle.checked ? "Execute" : "Generate";
+        }
+      }
+
+      executeToggle.addEventListener("change", () => {
+        modeStatus.textContent = executeToggle.checked ? "Execute" : "Generate";
+      });
+      debugToggle.addEventListener("change", () => {
+        if (!isAdmin) {
+          debugToggle.checked = false;
+        }
+        debugStatus.textContent = debugToggle.checked ? "On" : "Off";
+      });
+
+      function setStatus(text) {
+        status.querySelector("span").textContent = text;
+      }
+
+      function setRunningState(isRunning) {
+        sendBtn.disabled = isRunning;
+        stopBtn.disabled = !isRunning;
+      }
+
+      function setActiveTab(which) {
+        const answerActive = which === "answer";
+        const whyActive = which === "why";
+        const queriesActive = which === "queries";
+        const rawDebugActive = which === "rawDebug";
+        tabAnswer.classList.toggle("active", answerActive);
+        tabWhy.classList.toggle("active", whyActive);
+        tabQueries.classList.toggle("active", queriesActive);
+        tabRawDebug.classList.toggle("active", rawDebugActive);
+        answerPanel.classList.toggle("active", answerActive);
+        whyPanel.classList.toggle("active", whyActive);
+        queriesPanel.classList.toggle("active", queriesActive);
+        rawDebugPanel.classList.toggle("active", rawDebugActive);
+      }
+
+      function extractExecutedQueriesBlock(text) {
+        const marker = "Effective Executed Queries:";
+        const start = text.indexOf(marker);
+        if (start === -1) return "";
+        const rest = text.slice(start + marker.length).trimStart();
+        const endMarkers = [
+          "\nDEBUG_PREP_LOGS:",
+          "\nscope_used:",
+          "\nDeterministic (pre-LLM):",
+          "\nFinal Answer:",
+          "\nProvenance:",
+        ];
+        let end = rest.length;
+        for (const markerText of endMarkers) {
+          const idx = rest.indexOf(markerText);
+          if (idx !== -1 && idx < end) end = idx;
+        }
+        return rest.slice(0, end).trim();
+      }
+
+      function extractFinalAnswerText(text) {
+        if (!text) return "";
+        const marker = "Final Answer:";
+        const start = text.indexOf(marker);
+        if (start === -1) return text;
+        const rest = text.slice(start + marker.length).trimStart();
+        const end = rest.indexOf("\nProvenance:");
+        return (end === -1 ? rest : rest.slice(0, end)).trim();
+      }
+
+      function extractNamedJsonBlock(text, label) {
+        if (!text) return null;
+        const marker = `${label}:\n\`\`\`json`;
+        const start = text.indexOf(marker);
+        if (start === -1) return null;
+        const jsonStart = start + marker.length;
+        const end = text.indexOf("\n```", jsonStart);
+        if (end === -1) return null;
+        const raw = text.slice(jsonStart, end).trim();
+        try {
+          return JSON.parse(raw);
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function extractProvenance(text) {
+        return extractNamedJsonBlock(text, "Provenance");
+      }
+
+      function extractGroundingSignal(text) {
+        const direct = extractNamedJsonBlock(text, "grounding_confidence");
+        if (direct) return direct;
+        const provenance = extractNamedJsonBlock(text, "Provenance");
+        if (provenance && provenance.grounding_confidence) {
+          return provenance.grounding_confidence;
+        }
+        return null;
+      }
+
+      function confirmationOptionsFromSignal(signal) {
+        if (!signal || !Array.isArray(signal.confirmation_options)) return [];
+        return signal.confirmation_options
+          .map((entry) => ({
+            mention: String(entry.mention || "").trim(),
+            options: Array.isArray(entry.options) ? entry.options : [],
+          }))
+          .filter((entry) => entry.mention && entry.options.length);
+      }
+
+      function optionLabel(option) {
+        const label = option.label || option.matched_value || option.family_label || option.family_type || "candidate";
+        const family = option.family_label || option.family_type || "";
+        return family && label !== family ? `${label} · ${family}` : label;
+      }
+
+      function confirmedPrompt(mention, option) {
+        const rawBase = lastSubmittedPrompt || question.value.trim();
+        const base = rawBase
+          .split(/\n{2,}/)
+          .filter((block) => {
+            const trimmed = block.trim();
+            return !/^Use\s+"[^"]+"\s+as\s+the\s+/i.test(trimmed)
+              && !/^Treat\s+"[^"]+"\s+as\s+a\s+/i.test(trimmed);
+          })
+          .join("\n\n")
+          .trim();
+        if (option.kind === "backend_match") {
+          const label = option.label || option.matched_value || mention;
+          const family = option.family_label || option.family_type || "entity";
+          return `${base}\n\nUse "${label}" as the ${family} for "${mention}".`;
+        }
+        const family = option.family_label || option.family_type || "selected entity type";
+        return `${base}\n\nTreat "${mention}" as a ${family}.`;
+      }
+
+      function renderConfirmationOptions(signal) {
+        const groups = confirmationOptionsFromSignal(signal);
+        if (!groups.length) {
+          confirmationPanel.classList.remove("visible");
+          confirmationPanel.innerHTML = "";
+          return;
+        }
+        confirmationPanel.innerHTML = `
+          <div class="confirmation-title">Confirm entity grounding</div>
+          <div class="confirmation-list">
+            ${groups
+              .map(
+                (group, groupIndex) => `
+                  <div class="confirmation-item">
+                    <div class="confirmation-mention">${escapeHtml(group.mention)}</div>
+                    <div class="confirmation-options">
+                      ${group.options
+                        .map(
+                          (option, optionIndex) => `
+                            <button class="confirmation-option" type="button" data-group="${groupIndex}" data-option="${optionIndex}">
+                              ${escapeHtml(optionLabel(option))}
+                            </button>
+                          `,
+                        )
+                        .join("")}
+                    </div>
+                  </div>
+                `,
+              )
+              .join("")}
+          </div>
+        `;
+        confirmationPanel.classList.add("visible");
+        confirmationPanel.querySelectorAll(".confirmation-option").forEach((button) => {
+          button.addEventListener("click", () => {
+            const group = groups[Number(button.dataset.group)];
+            const option = group?.options?.[Number(button.dataset.option)];
+            if (!group || !option) return;
+            question.value = confirmedPrompt(group.mention, option);
+            question.focus();
+            if (!activeAbortController) {
+              runQuery();
+            }
+          });
+        });
+      }
+
+      function describeGroundingSignal(signal) {
+        if (!signal) {
+          return {
+            badge: "-",
+            detail: "No grounding details were included in this response.",
+          };
+        }
+        const overall = signal.overall || "unknown";
+        const mentions = Array.isArray(signal.mentions_requiring_confirmation)
+          ? signal.mentions_requiring_confirmation
+          : [];
+        const mentionText = mentions.length ? ` Mentions: ${mentions.join(", ")}.` : "";
+        if (overall === "high_confidence") {
+          return {
+            badge: "High confidence",
+            detail: `Grounding was confident before execution.${mentionText}`,
+          };
+        }
+        if (overall === "mixed") {
+          return {
+            badge: "Mixed",
+            detail: `Some entities grounded cleanly, but there were still partial ambiguities or unresolved mentions.${mentionText}`,
+          };
+        }
+        if (overall === "needs_confirmation") {
+          return {
+            badge: "Needs confirmation",
+            detail: `The system found likely entity candidates but not enough grounding to choose confidently.${mentionText}`,
+          };
+        }
+        if (overall === "clarification_needed") {
+          return {
+            badge: "Clarification needed",
+            detail: `Multiple possible entity matches were found and the query should be clarified before execution.${mentionText}`,
+          };
+        }
+        if (overall === "low_confidence") {
+          return {
+            badge: "Low confidence",
+            detail: `Entity grounding was weak and did not produce a dependable match.${mentionText}`,
+          };
+        }
+        if (overall === "none") {
+          return {
+            badge: "Not needed",
+            detail: "This request did not require entity grounding.",
+          };
+        }
+        return {
+          badge: overall,
+          detail: `Grounding state: ${overall}.${mentionText}`,
+        };
+      }
+
+      function shortValue(value) {
+        if (value === null || value === undefined || value === "") return "-";
+        if (typeof value === "object") return JSON.stringify(value);
+        return String(value);
+      }
+
+      function renderAnswerPanel(text, provenance) {
+        const finalText = extractFinalAnswerText(text || "");
+        const rows = Array.isArray(provenance?.evidence?.sample_rows)
+          ? provenance.evidence.sample_rows
+          : [];
+        const firstRow = rows.length === 1 && rows[0] && typeof rows[0] === "object" && !Array.isArray(rows[0])
+          ? rows[0]
+          : null;
+        if (!firstRow) {
+          output.textContent = finalText;
+          return;
+        }
+        const entries = Object.entries(firstRow)
+          .filter(([, value]) => value !== null && value !== undefined && value !== "")
+          .slice(0, 10);
+        output.innerHTML = `
+          <div class="answer-view">
+            <div class="answer-text">${escapeHtml(finalText)}</div>
+            <section class="answer-detail-card">
+              <div class="answer-detail-title">Evidence Detail</div>
+              <div class="answer-detail-grid">
+                ${entries
+                  .map(
+                    ([key, value]) => `
+                      <div class="answer-detail-field">
+                        <div class="answer-detail-label">${escapeHtml(key)}</div>
+                        <div class="answer-detail-value">${escapeHtml(shortValue(value))}</div>
+                      </div>
+                    `,
+                  )
+                  .join("")}
+              </div>
+            </section>
+          </div>
+        `;
+      }
+
+      function listValue(value) {
+        if (!Array.isArray(value) || !value.length) return "-";
+        return value.map(shortValue).join(", ");
+      }
+
+      function whySummaryCard(label, value) {
+        return `
+          <div class="why-card">
+            <div class="why-card-label">${escapeHtml(label)}</div>
+            <div class="why-card-value">${escapeHtml(value)}</div>
+          </div>
+        `;
+      }
+
+      function uncertaintyLabel(provenance) {
+        const overall = provenance?.uncertainty?.overall;
+        if (!overall || overall === "none") return "none";
+        return String(overall).replace(/_/g, " ");
+      }
+
+      function uncertaintySignals(provenance) {
+        const signals = provenance?.uncertainty?.signals;
+        return Array.isArray(signals) ? signals.filter((signal) => signal && typeof signal === "object") : [];
+      }
+
+      function renderWhyUncertainty(provenance) {
+        const signals = uncertaintySignals(provenance);
+        if (!signals.length) {
+          return `<div class="why-empty">No repair drift, weak retrieval, missing scope, or backend relation limitation was reported.</div>`;
+        }
+        return `
+          <div class="why-step-list">
+            ${signals
+              .map((signal) => {
+                const severity = signal.severity || "info";
+                const title = String(signal.kind || "uncertainty").replace(/_/g, " ");
+                const message = signal.message || title;
+                return `
+                  <article class="why-step">
+                    <div class="why-step-id">${escapeHtml(severity)}</div>
+                    <div>
+                      <div class="why-step-title">${escapeHtml(title)}</div>
+                      <div class="why-step-meta">${escapeHtml(message)}</div>
+                    </div>
+                  </article>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function firstSelectedRoot(provenance) {
+        const stepRoot = Array.isArray(provenance?.plan_steps)
+          ? provenance.plan_steps.find((step) => step?.root_field)?.root_field
+          : "";
+        const executedRoot = Array.isArray(provenance?.scope_used?.executed_roots)
+          ? provenance.scope_used.executed_roots[0]
+          : "";
+        const plannedRoot = Array.isArray(provenance?.scope_used?.planned_roots)
+          ? provenance.scope_used.planned_roots[0]
+          : "";
+        return stepRoot || executedRoot || plannedRoot || "-";
+      }
+
+      function renderWhySteps(steps) {
+        if (!Array.isArray(steps) || !steps.length) {
+          return `<div class="why-empty">No PlanV2 steps were included in this response.</div>`;
+        }
+        return `
+          <div class="why-step-list">
+            ${steps
+              .map((step) => {
+                const fields = listValue(step.fields);
+                const filter = step.filter ? JSON.stringify(step.filter) : "-";
+                const groupBy = listValue(step.group_by);
+                const metrics = Array.isArray(step.metrics)
+                  ? step.metrics.map((metric) => metric?.op || JSON.stringify(metric)).join(", ")
+                  : "-";
+                const meta = [
+                  step.root_field ? `root ${step.root_field}` : "",
+                  fields !== "-" ? `fields ${fields}` : "",
+                  filter !== "-" ? `filter ${filter}` : "",
+                  groupBy !== "-" ? `group by ${groupBy}` : "",
+                  metrics !== "-" ? `metrics ${metrics}` : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ");
+                return `
+                  <article class="why-step">
+                    <div class="why-step-id">${escapeHtml(step.id || "?")}</div>
+                    <div>
+                      <div class="why-step-title">${escapeHtml(step.description || step.op || "Plan step")}</div>
+                      <div class="why-step-meta">${escapeHtml(meta || step.op || "-")}</div>
+                    </div>
+                  </article>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderWhyEvidence(rows) {
+        if (!Array.isArray(rows) || !rows.length) {
+          return `<div class="why-empty">No row-aligned evidence sample was included.</div>`;
+        }
+        const fields = Array.from(
+          rows.reduce((set, row) => {
+            if (row && typeof row === "object" && !Array.isArray(row)) {
+              Object.keys(row).forEach((key) => set.add(key));
+            }
+            return set;
+          }, new Set()),
+        ).slice(0, 8);
+        if (!fields.length) {
+          return `<div class="why-empty">Evidence was present, but not as object rows.</div>`;
+        }
+        return `
+          <div class="why-table-wrap">
+            <table class="why-table">
+              <thead>
+                <tr>${fields.map((field) => `<th>${escapeHtml(field)}</th>`).join("")}</tr>
+              </thead>
+              <tbody>
+                ${rows
+                  .slice(0, 5)
+                  .map(
+                    (row) => `
+                      <tr>
+                        ${fields.map((field) => `<td>${escapeHtml(shortValue(row?.[field]))}</td>`).join("")}
+                      </tr>
+                    `,
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      function renderWhyConstraints(scopeUsed) {
+        const constraints = Array.isArray(scopeUsed?.matched_constraints)
+          ? scopeUsed.matched_constraints
+          : [];
+        if (!constraints.length) {
+          return `<div class="why-empty">No explicit matched constraints were reported.</div>`;
+        }
+        return `
+          <div class="why-step-list">
+            ${constraints
+              .map(
+                (item) => `
+                  <article class="why-step">
+                    <div class="why-step-id">${escapeHtml(item.root || "?")}</div>
+                    <div>
+                      <div class="why-step-title">${escapeHtml(item.field || "constraint")} ${escapeHtml(item.op || "")}</div>
+                      <div class="why-step-meta">${escapeHtml(listValue(item.values))}</div>
+                    </div>
+                  </article>
+                `,
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderWhyBadges(provenance, queriesText) {
+        const rows = Array.isArray(provenance?.evidence?.sample_rows)
+          ? provenance.evidence.sample_rows
+          : [];
+        const grounding = provenance?.grounding_confidence?.overall || "unknown";
+        const uncertainty = uncertaintyLabel(provenance);
+        const repaired = Array.isArray(provenance?.executed_queries)
+          ? provenance.executed_queries.some((query) => /effective/i.test(query?.title || ""))
+          : /effective/i.test(queriesText || "");
+        const badges = [
+          { label: `Root selected: ${firstSelectedRoot(provenance)}` },
+          { label: `${Array.isArray(provenance?.plan_steps) ? provenance.plan_steps.length : 0} PlanV2 step(s)` },
+          { label: repaired ? "Query repaired before execution" : "Query compiled directly", warn: repaired },
+          { label: rows.length ? "Evidence supports answer" : "No evidence sample", warn: !rows.length },
+          { label: `Grounding: ${grounding}`, warn: grounding !== "high_confidence" && grounding !== "none" },
+          { label: `Uncertainty: ${uncertainty}`, warn: uncertainty !== "none" },
+        ];
+        return `
+          <div class="why-badge-row">
+            ${badges
+              .map(
+                (badge) => `<span class="why-badge${badge.warn ? " warn" : ""}">${escapeHtml(badge.label)}</span>`,
+              )
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderWhyPanel(provenance, queriesText) {
+        if (!provenance) {
+          return `<div class="why-empty">Turn on debug output to inspect why an answer was produced.</div>`;
+        }
+        const grounding = describeGroundingSignal(provenance.grounding_confidence);
+        const steps = Array.isArray(provenance.plan_steps) ? provenance.plan_steps : [];
+        const rows = Array.isArray(provenance.evidence?.sample_rows)
+          ? provenance.evidence.sample_rows
+          : [];
+        const rowCount = provenance.evidence?.row_count ?? rows.length;
+        const queryText = queriesText || provenance.executed_queries?.[0]?.query || "";
+        return `
+          <div class="why-panel">
+            ${renderWhyBadges(provenance, queriesText)}
+            <div class="why-summary">
+              ${whySummaryCard("Selected root", firstSelectedRoot(provenance))}
+              ${whySummaryCard("PlanV2 steps", steps.length)}
+              ${whySummaryCard("Evidence rows", rowCount)}
+              ${whySummaryCard("Grounding", grounding.badge)}
+              ${whySummaryCard("Uncertainty", uncertaintyLabel(provenance))}
+            </div>
+            <section class="why-section">
+              <div class="why-section-title">Uncertainty Signals</div>
+              ${renderWhyUncertainty(provenance)}
+            </section>
+            <section class="why-section">
+              <div class="why-section-title">PlanV2 Steps</div>
+              ${renderWhySteps(steps)}
+            </section>
+            <section class="why-section">
+              <div class="why-section-title">Evidence Rows</div>
+              ${renderWhyEvidence(rows)}
+            </section>
+            <section class="why-section">
+              <div class="why-section-title">Scope And Filters</div>
+              ${renderWhyConstraints(provenance.scope_used)}
+            </section>
+            <section class="why-section">
+              <div class="why-section-title">Executed GraphQL</div>
+              ${
+                queryText
+                  ? `<pre class="why-code">${escapeHtml(queryText)}</pre>`
+                  : `<div class="why-empty">No executed query was included.</div>`
+              }
+            </section>
+          </div>
+        `;
+      }
+
+      function renderOutputs(text) {
+        lastRenderedOutputText = text || "";
+        const queriesText = extractExecutedQueriesBlock(text || "");
+        const provenance = extractProvenance(text || "");
+        renderAnswerPanel(text || "", provenance);
+        queriesOutput.textContent = queriesText || "No executed queries were extracted from this response.";
+        whyOutput.innerHTML = renderWhyPanel(provenance, queriesText);
+        rawDebugOutput.textContent = text || "No full debug output is available yet.";
+        const groundingSignal = extractGroundingSignal(text || "");
+        const grounding = describeGroundingSignal(groundingSignal);
+        groundingStatus.textContent = grounding.badge;
+        renderConfirmationOptions(groundingSignal);
+        const showDebugTabs = isAdmin && debugToggle.checked && (!!queriesText || !!provenance);
+        debugTabs.classList.toggle("visible", showDebugTabs);
+        setActiveTab("answer");
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function parseSseEvent(raw) {
+        const event = { event: "message", data: "" };
+        for (const line of raw.split(/\r?\n/)) {
+          if (!line || line.startsWith(":")) continue;
+          const separator = line.indexOf(":");
+          const field = separator === -1 ? line : line.slice(0, separator);
+          const value = separator === -1 ? "" : line.slice(separator + 1).replace(/^ /, "");
+          if (field === "event") {
+            event.event = value || "message";
+          } else if (field === "data") {
+            event.data += event.data ? `\n${value}` : value;
+          }
+        }
+        if (!event.data) return null;
+        try {
+          event.payload = JSON.parse(event.data);
+        } catch (err) {
+          event.payload = { message: event.data };
+        }
+        return event;
+      }
+
+      async function readSseResponse(res, onEvent) {
+        if (!res.ok || !res.body) {
+          const text = await res.text().catch(() => "");
+          let message = text || `Request failed with HTTP ${res.status}`;
+          try {
+            const parsed = JSON.parse(text);
+            message = parsed.error || message;
+          } catch (err) {}
+          if (res.status === 403) {
+            message = "Admin login required for debug features.";
+          }
+          throw new Error(message);
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let boundary = buffer.indexOf("\n\n");
+          while (boundary !== -1) {
+            const rawEvent = buffer.slice(0, boundary).trim();
+            buffer = buffer.slice(boundary + 2);
+            const event = parseSseEvent(rawEvent);
+            if (event) onEvent(event);
+            boundary = buffer.indexOf("\n\n");
+          }
+        }
+        const tail = buffer.trim();
+        if (tail) {
+          const event = parseSseEvent(tail);
+          if (event) onEvent(event);
+        }
+      }
+
+      tabAnswer.addEventListener("click", () => setActiveTab("answer"));
+      tabWhy.addEventListener("click", () => setActiveTab("why"));
+      tabQueries.addEventListener("click", () => setActiveTab("queries"));
+      tabRawDebug.addEventListener("click", () => setActiveTab("rawDebug"));
+
+      async function runQuery() {
+        const prompt = question.value.trim();
+        if (!prompt) return;
+        lastSubmittedPrompt = prompt;
+
+        renderOutputs("");
+        debugTabs.classList.remove("visible");
+        const controller = new AbortController();
+        activeAbortController = controller;
+        setRunningState(true);
+        setStatus("Running");
+        const startedAt = performance.now();
+        if (elapsedTimer) {
+          clearInterval(elapsedTimer);
+        }
+        elapsedTime.textContent = "0.00s";
+        elapsedTimer = setInterval(() => {
+          elapsedTime.textContent = `${((performance.now() - startedAt) / 1000).toFixed(2)}s`;
+        }, 100);
+
+        const body = {
+          model: effectiveModel || "",
+          stream: true,
+          execute: isAdmin ? executeToggle.checked : true,
+          dry_run: isAdmin && debugToggle.checked,
+          messages: [{ role: "user", content: prompt }],
+        };
+        const stageState = new Map();
+        const stepState = new Map();
+        let answerText = "";
+
+        function normalizeStatus(status) {
+          const normalized = String(status || "pending").toLowerCase();
+          if (normalized === "done") return "completed";
+          if (normalized === "error") return "failed";
+          return normalized;
+        }
+
+        function prettyStageName(stage) {
+          const names = {
+            received: "Received",
+            grounding: "Grounding",
+            planning: "Planning",
+            validation: "Validation",
+            repair: "Repair",
+            fallback: "Fallback",
+            execution: "Execution",
+            answer_synthesis: "Answer",
+            answer: "Streaming",
+          };
+          return names[stage] || String(stage || "Pipeline").replace(/_/g, " ");
+        }
+
+        function formatElapsed(ms) {
+          return typeof ms === "number" ? `${(ms / 1000).toFixed(2)}s` : "--";
+        }
+
+        function statusLabel(status) {
+          const labels = {
+            pending: "Waiting",
+            running: "Live",
+            completed: "Done",
+            skipped: "Skipped",
+            failed: "Needs attention",
+          };
+          return labels[normalizeStatus(status)] || String(status || "Pending");
+        }
+
+        function phaseEvent(stage, fallbackMessage) {
+          const event = stageState.get(stage);
+          return (
+            event || {
+              stage,
+              status: "pending",
+              message: fallbackMessage,
+            }
+          );
+        }
+
+        function renderPhaseCard(event) {
+          const status = normalizeStatus(event.status);
+          const stage = event.stage || "pipeline";
+          const message = event.message || "Waiting for this phase.";
+          return `
+            <section class="phase-card ${escapeHtml(status)}">
+              <div class="phase-topline">
+                <span class="phase-name">${escapeHtml(prettyStageName(stage))}</span>
+                <span class="phase-time">${escapeHtml(formatElapsed(event.elapsed_ms))}</span>
+              </div>
+              <div class="phase-status">
+                <span class="status-glyph"></span>
+                ${escapeHtml(statusLabel(status))}
+              </div>
+              <div class="phase-message">${escapeHtml(message)}</div>
+            </section>
+          `;
+        }
+
+        function renderStepCard(step) {
+          const status = normalizeStatus(step.status);
+          const stepId = step.step_id || "?";
+          const op = step.op || "operation";
+          const root = step.root ? ` from ${step.root}` : "";
+          const rows =
+            typeof step.row_count === "number"
+              ? `${step.row_count} row${step.row_count === 1 ? "" : "s"}`
+              : statusLabel(status);
+          const rowClass = typeof step.row_count === "number" ? "" : " pending";
+          return `
+            <article class="step-card ${escapeHtml(status)}">
+              <div class="step-orb">${escapeHtml(stepId.replace(/^s/i, ""))}</div>
+              <div class="step-main">
+                <div class="step-title">${escapeHtml(stepId)} · ${escapeHtml(op)}</div>
+                <div class="step-meta">${escapeHtml(statusLabel(status))}${escapeHtml(root)} · ${escapeHtml(formatElapsed(step.elapsed_ms))}</div>
+              </div>
+              <div class="row-badge${rowClass}">${escapeHtml(rows)}</div>
+            </article>
+          `;
+        }
+
+        function renderExecutionHud() {
+          const steps = Array.from(stepState.values());
+          const repair = stageState.has("repair") ? [stageState.get("repair")] : [];
+          const fallback = stageState.has("fallback") ? [stageState.get("fallback")] : [];
+          const phases = [
+            phaseEvent("grounding", "Preparing entity and schema context."),
+            phaseEvent("planning", "Waiting for the planner."),
+            phaseEvent("validation", "Waiting for PlanV2 validation."),
+            ...repair,
+            ...fallback,
+            phaseEvent("execution", "Waiting for execution."),
+            phaseEvent("answer_synthesis", "Waiting to prepare the final answer."),
+          ];
+          const active =
+            [...phases].reverse().find((phase) => normalizeStatus(phase.status) === "running") ||
+            [...steps].reverse().find((step) => normalizeStatus(step.status) === "running") ||
+            phases.find((phase) => normalizeStatus(phase.status) === "pending") ||
+            phases[phases.length - 1];
+          const activeText = active?.stage === "plan_step"
+            ? `Step ${active.step_id || "?"}`
+            : prettyStageName(active?.stage);
+          const stepHtml = steps.length
+            ? steps.map(renderStepCard).join("")
+            : `<article class="step-card pending">
+                <div class="step-orb">-</div>
+                <div class="step-main">
+                  <div class="step-title">Plan steps</div>
+                  <div class="step-meta">Steps will appear after validation.</div>
+                </div>
+                <div class="row-badge pending">waiting</div>
+              </article>`;
+          return `
+            <div class="execution-hud">
+              <div class="hud-header">
+                <div>
+                  <div class="hud-eyebrow">Live execution</div>
+                  <div class="hud-title">Zephyr flight deck</div>
+                  <div class="hud-subtitle">Runtime stages and PlanV2 steps update from real backend events.</div>
+                </div>
+                <div class="hud-live">
+                  <span class="hud-live-dot"></span>
+                  ${escapeHtml(activeText || "Working")}
+                </div>
+              </div>
+              <div class="phase-grid">
+                ${phases.map(renderPhaseCard).join("")}
+              </div>
+              <div class="step-rack">
+                <div class="step-rack-title">
+                  <span>PlanV2 step lane</span>
+                  <span class="step-count-pill">${steps.length || 0} step${steps.length === 1 ? "" : "s"}</span>
+                </div>
+                ${stepHtml}
+              </div>
+            </div>
+          `;
+        }
+
+        function renderStreamingProgress() {
+          if (answerText) {
+            renderOutputs(answerText);
+            return;
+          }
+          output.innerHTML = renderExecutionHud();
+          queriesOutput.textContent = "Executed queries will appear when the answer is ready.";
+          whyOutput.innerHTML = `<div class="why-empty">Why details will appear when provenance is ready.</div>`;
+          rawDebugOutput.textContent = "Full debug output will appear when the answer is ready.";
+          groundingStatus.textContent = "-";
+          confirmationPanel.classList.remove("visible");
+          confirmationPanel.innerHTML = "";
+          debugTabs.classList.remove("visible");
+        }
+
+        try {
+          renderStreamingProgress();
+          const res = await fetch("/v1/chat/completions/stream", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+          });
+          await readSseResponse(res, (event) => {
+            const payload = event.payload || {};
+            if (event.event === "stage") {
+              if (payload.stage === "plan_step" && payload.step_id) {
+                stepState.set(payload.step_id, payload);
+              } else if (payload.stage) {
+                stageState.set(payload.stage, payload);
+              }
+              setStatus(payload.status || payload.stage || "Running");
+              renderStreamingProgress();
+            } else if (event.event === "answer") {
+              answerText += payload.content || "";
+              renderOutputs(answerText);
+            } else if (event.event === "error") {
+              answerText = payload.message || "Streaming request failed.";
+              renderOutputs(answerText);
+              setStatus("Error");
+            } else if (event.event === "done") {
+              setStatus("Done");
+            }
+          });
+          if (!answerText) {
+            output.innerHTML = renderExecutionHud();
+          }
+          setStatus("Done");
+          loadHistory(); // Refresh history after query
+        } catch (err) {
+          if (err.name === "AbortError") {
+            renderOutputs("Request cancelled.");
+            setStatus("Cancelled");
+          } else {
+            renderOutputs(`Error: ${err.message}`);
+            setStatus("Error");
+          }
+        } finally {
+          if (activeAbortController === controller) {
+            activeAbortController = null;
+          }
+          if (elapsedTimer) {
+            clearInterval(elapsedTimer);
+            elapsedTimer = null;
+          }
+          elapsedTime.textContent = `${((performance.now() - startedAt) / 1000).toFixed(2)}s`;
+          setRunningState(false);
+        }
+      }
+
+      sendBtn.addEventListener("click", runQuery);
+      stopBtn.addEventListener("click", () => {
+        if (!activeAbortController) return;
+        setStatus("Cancelling");
+        stopBtn.disabled = true;
+        activeAbortController.abort();
+      });
+
+      copyOutputBtn.addEventListener("click", async () => {
+        const text = lastRenderedOutputText || output.textContent || "";
+        if (!text.trim()) return;
+        const previousLabel = copyOutputBtn.textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          copyOutputBtn.textContent = "Copied";
+        } catch (err) {
+          copyOutputBtn.textContent = "Copy Failed";
+        }
+        setTimeout(() => {
+          copyOutputBtn.textContent = previousLabel;
+        }, 1200);
+      });
+
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        authStatus.textContent = "Signing in...";
+        try {
+          const res = await fetch("/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: adminUsername.value,
+              password: adminPassword.value,
+            }),
+          });
+          if (!res.ok) {
+            authStatus.textContent = "Admin login failed.";
+            return;
+          }
+          adminPassword.value = "";
+          const session = await res.json();
+          applyAuthState(session);
+          await loadConfig();
+          await loadHistory();
+        } catch (err) {
+          authStatus.textContent = "Admin login failed.";
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await fetch("/auth/logout", { method: "POST" });
+        } catch (err) {}
+        effectiveModel = "";
+        applyAuthState({ authenticated: false, role: "anonymous", admin_configured: true });
+      });
+
+      async function loadConfig() {
+        if (!isAdmin) return;
+        try {
+          const res = await fetch("/config");
+          if (!res.ok) return;
+          const cfg = await res.json();
+          effectiveModel = cfg.model || "";
+          const label = document.querySelector(".badge");
+          if (label && effectiveModel) {
+            label.textContent = `Model: ${effectiveModel}`;
+          }
+        } catch (err) {
+          // ignore
+        }
+      }
+
+      // History management functions
+      function formatHistoryTimestamp(timestamp) {
+        if (!timestamp) return "-";
+        const date = new Date(timestamp);
+        if (Number.isNaN(date.getTime())) return timestamp;
+        return date.toLocaleString();
+      }
+
+      function renderHistoryDetail(entry) {
+        selectedHistoryEntry = entry || null;
+        const hasSelection = !!entry;
+        reuseHistoryBtn.disabled = !hasSelection;
+        loadHistoryOutputBtn.disabled = !hasSelection;
+
+        if (!entry) {
+          historyDetailTitle.textContent = "History Details";
+          historyDetailMeta.textContent = "Select a query to inspect it.";
+          historyDetailQuestion.textContent = "No history item selected.";
+          historyDetailAnswer.textContent = "Run a query or click a history item to inspect it here.";
+          historyDetailGrounding.textContent = "No grounding details available yet.";
+          return;
+        }
+
+        historyDetailTitle.textContent = entry.success ? "Successful Query" : "Failed Query";
+        historyDetailMeta.textContent = `${entry.success ? "Success" : "Failed"} · ${Number.isFinite(entry.execution_ms) ? entry.execution_ms : 0}ms · ${formatHistoryTimestamp(entry.timestamp)}`;
+        historyDetailQuestion.textContent = entry.question || "(no question)";
+        historyDetailAnswer.textContent =
+          entry.answer || entry.error || "No answer or error details were stored for this query.";
+        historyDetailGrounding.textContent = describeGroundingSignal(
+          extractGroundingSignal(entry.answer || entry.error || "")
+        ).detail;
+      }
+
+      async function loadHistory() {
+        if (!isAdmin) {
+          renderEmptyHistory("Admin login required to view query history.");
+          historyStats.style.display = "none";
+          return;
+        }
+        try {
+          let res = await fetch("/history");
+          let entries = [];
+
+          if (res.ok) {
+            entries = await res.json();
+          } else {
+            res = await fetch("/history.json");
+            if (res.ok) {
+              entries = await res.json();
+            } else {
+              entries = [];
+            }
+          }
+
+          renderHistoryList(entries);
+          if (entries.length > 0) {
+            await loadHistoryStats();
+          } else {
+            historyStats.style.display = "none";
+          }
+        } catch (err) {
+          renderHistoryList([]);
+          historyStats.style.display = "none";
+        }
+      }
+
+      function renderEmptyHistory(message) {
+        currentHistoryEntries = [];
+        selectedHistoryId = null;
+        historyList.replaceChildren();
+        const item = document.createElement("div");
+        item.className = "history-item";
+        item.style.color = "var(--muted)";
+        item.textContent = message;
+        historyList.appendChild(item);
+        renderHistoryDetail(null);
+      }
+
+      function renderHistoryList(entries) {
+        if (!entries || entries.length === 0) {
+          renderEmptyHistory("No history yet. Run a query first.");
+          return;
+        }
+        currentHistoryEntries = entries;
+        const stillSelected = entries.find((entry) => entry.id === selectedHistoryId);
+        if (!stillSelected) {
+          selectedHistoryId = entries[0].id || null;
+        }
+        historyList.replaceChildren();
+        for (const entry of entries) {
+          const item = document.createElement("div");
+          item.className = "history-item";
+          if (entry.id && entry.id === selectedHistoryId) {
+            item.classList.add("active");
+          }
+          item.title = entry.id || "";
+
+          const questionRow = document.createElement("div");
+          questionRow.className = "history-item-question";
+          const questionText = entry.question || "";
+          const shortQuestion = questionText.length > 60 ? `${questionText.slice(0, 60)}...` : questionText;
+          questionRow.textContent = `Q: ${shortQuestion}`;
+
+          const metaRow = document.createElement("div");
+          metaRow.className = "history-item-meta";
+          const timestamp = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString() : "-";
+          const status = entry.success ? "✓" : "✗";
+          const duration = Number.isFinite(entry.execution_ms) ? entry.execution_ms : 0;
+          metaRow.textContent = `${status} · ${duration}ms · ${timestamp}`;
+
+          item.appendChild(questionRow);
+          item.appendChild(metaRow);
+          item.addEventListener("click", () => {
+            selectedHistoryId = entry.id || null;
+            renderHistoryList(currentHistoryEntries);
+          });
+          historyList.appendChild(item);
+        }
+        const selectedEntry = entries.find((entry) => entry.id === selectedHistoryId) || entries[0];
+        renderHistoryDetail(selectedEntry || null);
+      }
+
+      async function loadHistoryStats() {
+        if (!isAdmin) return;
+        try {
+          let res = await fetch("/history/stats");
+          if (!res.ok) {
+            res = await fetch("/stats.json");
+            if (!res.ok) {
+              historyStats.style.display = "none";
+              return;
+            }
+          }
+          const stats = await res.json();
+          const total = stats.total_queries ?? stats.total ?? 0;
+          const successful = stats.successful_queries ?? stats.successful ?? 0;
+          const averageMs = stats.average_execution_ms ?? stats.avg_time ?? 0;
+          const successRate = total > 0 ? Math.round((successful / total) * 100) : 0;
+          document.getElementById("statTotal").textContent = total;
+          document.getElementById("statSuccess").textContent = `${successRate}%`;
+          document.getElementById("statAvgTime").textContent = `${Math.round(averageMs)}ms`;
+          historyStats.style.display = "block";
+        } catch (err) {
+          historyStats.style.display = "none";
+        }
+      }
+
+      async function searchHistory() {
+        if (!isAdmin) return;
+        const query = historySearchInput.value.trim();
+        if (!query) {
+          loadHistory();
+          return;
+        }
+        try {
+          const res = await fetch("/history/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query }),
+          });
+          if (!res.ok) return;
+          const results = await res.json();
+          renderHistoryList(results);
+        } catch (err) {
+          renderEmptyHistory("History search failed.");
+        }
+      }
+
+      async function clearHistoryUI() {
+        if (!isAdmin) return;
+        if (!confirm("Clear all query history? This cannot be undone.")) return;
+        try {
+          const res = await fetch("/history", { method: "DELETE" });
+          if (res.ok) {
+            renderEmptyHistory("History cleared. Run a new query.");
+            historyStats.style.display = "none";
+          }
+        } catch (err) {}
+      }
+
+      refreshHistoryBtn.addEventListener("click", loadHistory);
+      clearHistoryBtn.addEventListener("click", clearHistoryUI);
+      searchHistoryBtn.addEventListener("click", searchHistory);
+      reuseHistoryBtn.addEventListener("click", () => {
+        if (!selectedHistoryEntry) return;
+        question.value = selectedHistoryEntry.question || "";
+        question.focus();
+      });
+      loadHistoryOutputBtn.addEventListener("click", () => {
+        if (!selectedHistoryEntry) return;
+        renderOutputs(selectedHistoryEntry.answer || selectedHistoryEntry.error || "");
+      });
+      historySearchInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") searchHistory();
+      });
+
+      async function bootstrap() {
+        await refreshSession();
+        applyInitialQueryParams();
+      }
+
+      bootstrap();
+    </script>
+  </body>
+</html>
